@@ -2,6 +2,7 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { useUser } from "@/hooks/useUser";
 import { Project } from "@/types";
@@ -15,6 +16,7 @@ export function MyProjects({
   projects: Project[];
 }) {
   const { user } = useUser();
+  const router = useRouter();
   if (!user) {
     redirect("/");
   }
@@ -33,9 +35,10 @@ export function MyProjects({
             </p>
           </div>
           <LoadProject
-            fullXsBtn
-            onSuccess={(project: Project) => {
-              setProjects((prev) => [...prev, project]);
+            onLoad={(project) => {
+              // When a project is loaded, save its HTML to local storage and redirect to the editor.
+              localStorage.setItem("html_content", project.html);
+              router.push("/"); // Redirect to editor page
             }}
           />
         </header>
