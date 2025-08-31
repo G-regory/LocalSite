@@ -286,11 +286,6 @@ export const AppEditor = ({ project }: { project?: Project | null }) => {
                 onNewPrompt={(prompt: string) => {
                   setPrompts((prev) => [...prev, prompt]);
                 }}
-                onScrollToBottom={() => {
-                  editorRef.current?.revealLine(
-                    editorRef.current?.getModel()?.getLineCount() ?? 0
-                  );
-                }}
                 isEditableModeEnabled={isEditableModeEnabled}
                 setIsEditableModeEnabled={setIsEditableModeEnabled}
                 selectedElement={selectedElement}
