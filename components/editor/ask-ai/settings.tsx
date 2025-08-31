@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Settings as SettingsIcon, ChevronDown } from "lucide-react";
 import Image from "next/image";
 
@@ -33,6 +33,11 @@ export function Settings({
   onClose,
 }: SettingsProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const availableModels = MODELS.filter(modelItem => {
     const isLocalMode = process.env.NEXT_PUBLIC_LOCAL_MODE === "true";
@@ -50,7 +55,7 @@ export function Settings({
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
           <SettingsIcon className="h-4 w-4 mr-2" />
-          {selectedModelObj?.label || model}
+          {isClient ? (selectedModelObj?.label || model) : "Chargement..."}
           <ChevronDown className="h-4 w-4 ml-2" />
         </Button>
       </DropdownMenuTrigger>
