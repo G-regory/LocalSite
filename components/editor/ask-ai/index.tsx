@@ -27,7 +27,6 @@ import { getApiEndpoint, getDefaultProvider, getDefaultModel } from "@/lib/clien
 export function AskAI({
   html,
   setHtml,
-  onScrollToBottom,
   isAiWorking,
   setisAiWorking,
   isEditableModeEnabled = false,
@@ -39,7 +38,6 @@ export function AskAI({
 }: {
   html: string;
   setHtml: (html: string) => void;
-  onScrollToBottom: () => void;
   isAiWorking: boolean;
   onNewPrompt: (prompt: string) => void;
   htmlHistory?: HtmlHistory[];
@@ -120,7 +118,7 @@ export function AskAI({
             if (audio.current) {
               try {
                 await audio.current.play();
-              } catch (e) {
+              } catch {
                 // Ignore play() interrupt error
               }
             }
