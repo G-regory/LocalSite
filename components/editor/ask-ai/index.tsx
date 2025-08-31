@@ -56,7 +56,7 @@ export function AskAI({
   const [open, setOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [hasAsked, setHasAsked] = useState(false);
-  const [previousPrompt, setPreviousPrompt] = useState("");
+  const [, setPreviousPrompt] = useState(""); // LIGNE CORRIGÉE
   const [provider, setProvider] = useLocalStorage("provider", getDefaultProvider());
   const [model, setModel] = useLocalStorage("model", getDefaultModel());
   const [openProvider, setOpenProvider] = useState(false);
@@ -148,7 +148,7 @@ export function AskAI({
 
             // Now we have the complete HTML including </html>, so set it to be sure
             const finalDoc = contentResponse.match(
-              /<!DOCTYPE html>[\s\S]*<\/html>/
+              /<DOCTYPE html>[\s\S]*<\/html>/
             )?.[0];
             if (finalDoc) {
               setHtml(finalDoc);
