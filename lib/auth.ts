@@ -6,17 +6,20 @@ import MY_TOKEN_KEY from "./get-cookie-name";
 // UserResponse = type User & { token: string };
 type UserResponse = User & { token: string };
 
-export const isAuthenticated = async (): // req: NextRequest
-Promise<UserResponse | NextResponse<unknown> | undefined> => {
-  // En mode local, retourner un utilisateur fictif
+export const isAuthenticated = async (): Promise<
+  UserResponse | NextResponse<unknown> | undefined
+> => {
+  // En mode local, retourner un utilisateur fictif qui correspond au type User
   if (process.env.LOCAL_MODE === "true") {
     return {
       id: "local-user",
-      name: "Local User",
-      preferred_username: "local",
-      avatar_url: null,
+      name: "local",
+      fullname: "Local User",
+      avatarUrl: "", // Doit être une chaîne de caractères
+      isPro: false,
+      isLocalUse: true,
       token: "local-token",
-    } as UserResponse;
+    };
   }
 
   const authHeaders = await headers();
@@ -40,7 +43,7 @@ Promise<UserResponse | NextResponse<unknown> | undefined> => {
     );
   }
 
-  const user = await fetch("https://huggingface.co/api/whoami-v2", {
+  const hfUser = await fetch("https://huggingface.co/api/whoami-v2", {
     headers: {
       Authorization: token,
     },
@@ -61,7 +64,8 @@ Promise<UserResponse | NextResponse<unknown> | undefined> => {
         }
       );
     });
-  if (!user || !user.id) {
+
+  if (!hfUser || !hfUser.id) {
     return NextResponse.json(
       {
         ok: false,
@@ -75,6 +79,15 @@ Promise<UserResponse | NextResponse<unknown> | undefined> => {
       }
     );
   }
+
+  // Mapper la réponse de Hugging Face à notre type User
+  const user: User = {
+    id: hfUser.id,
+    name: hfUser.name,
+    fullname: hfUser.fullname,
+    avatarUrl: hfUser.avatarUrl || "",
+    isPro: hfUser.isPro,
+  };
 
   return {
     ...user,
