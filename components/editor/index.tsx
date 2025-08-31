@@ -39,10 +39,10 @@ export const AppEditor = ({ project }: { project?: Project | null }) => {
   const deploy = searchParams.get("deploy") === "true";
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const preview = useRef<HTMLDivElement>(null);
-  const editor = useRef<HTMLDivElement>(null);
+  const preview = useRef<HTMLDivElement | null>(null);
+  const editor = useRef<HTMLDivElement | null>(null);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const resizer = useRef<HTMLDivElement>(null);
+  const resizer = useRef<HTMLDivElement | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monacoRef = useRef<any>(null);
 
@@ -180,9 +180,10 @@ export const AppEditor = ({ project }: { project?: Project | null }) => {
     <section className="h-[100dvh] bg-neutral-950 flex flex-col">
       <Header tab={currentTab} onNewTab={setCurrentTab}>
         <LoadProject
-          onLoad={(project: { space_id: string; prompts: string[] }) => {
-         // Traiter les données du projet chargé
-            toast.success("Project loaded successfully!");
+          onLoad={(project) => {
+            setHtml(project.html);
+            setPrompts(project.prompts);
+            toast.success(`Project "${project.space_id}" loaded successfully!`);
           }}
         />
         <DownloadButton html={html} />
