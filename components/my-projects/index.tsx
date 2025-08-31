@@ -20,7 +20,7 @@ export function MyProjects({
   if (!user) {
     redirect("/");
   }
-  const [projects, setProjects] = useState<Project[]>(initialProjects || []);
+  const [projects] = useState<Project[]>(initialProjects || []);
   return (
     <>
       <section className="max-w-[86rem] py-12 px-4 mx-auto">
