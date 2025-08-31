@@ -34,6 +34,11 @@ export const PROVIDERS = {
     max_tokens: 16_384,
     id: "groq",
   },
+  openrouter: {
+    name: "OpenRouter",
+    max_tokens: 128000,
+    id: "openrouter",
+  },
   // Providers locaux
   ollama: {
     name: "Ollama (Local)",
@@ -50,6 +55,58 @@ export const PROVIDERS = {
 };
 
 export const MODELS = [
+  // --- OpenRouter Models ---
+  {
+    value: "moonshotai/kimi-k2:free",
+    label: "Kimi K2 (OpenRouter)",
+    providers: ["openrouter"],
+    autoProvider: "openrouter",
+  },
+  {
+    value: "z-ai/glm-4.5-air:free",
+    label: "GLM 4.5 Air (OpenRouter)",
+    providers: ["openrouter"],
+    autoProvider: "openrouter",
+  },
+  {
+    value: "qwen/qwen3-coder:free",
+    label: "Qwen3 Coder (OpenRouter)",
+    providers: ["openrouter"],
+    autoProvider: "openrouter",
+  },
+  {
+    value: "qwen/qwen-2.5-coder-32b-instruct:free",
+    label: "Qwen 2.5 Coder 32B (OpenRouter)",
+    providers: ["openrouter"],
+    autoProvider: "openrouter",
+  },
+  {
+    value: "deepseek/deepseek-r1-0528:free",
+    label: "DeepSeek R1 0528 (OpenRouter)",
+    providers: ["openrouter"],
+    autoProvider: "openrouter",
+    isThinker: true,
+  },
+  {
+    value: "deepseek/deepseek-chat-v3-0324:free",
+    label: "DeepSeek Chat v3 0324 (OpenRouter)",
+    providers: ["openrouter"],
+    autoProvider: "openrouter",
+  },
+  {
+    value: "deepseek/deepseek-r1:free",
+    label: "DeepSeek R1 (OpenRouter)",
+    providers: ["openrouter"],
+    autoProvider: "openrouter",
+    isThinker: true,
+  },
+  {
+    value: "deepseek/deepseek-chat-v3.1:free",
+    label: "DeepSeek Chat v3.1 (OpenRouter)",
+    providers: ["openrouter"],
+    autoProvider: "openrouter",
+  },
+  // --- Other Models ---
   {
     value: "deepseek-ai/DeepSeek-V3-0324",
     label: "DeepSeek V3 O324",
