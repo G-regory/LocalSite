@@ -44,6 +44,33 @@ async function callOllama(messages: any[], model: string, stream = true) {
   return response;
 }
 
+// Helper function to call OpenRouter API
+async function callOpenRouter(messages: any[], model: string, stream = true) {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  const baseUrl = process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
+  const endpoint = "/chat/completions";
+
+  const response = await fetch(`${baseUrl}${endpoint}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: model || process.env.OPENROUTER_MODEL,
+      messages,
+      stream,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`OpenRouter API error: ${response.statusText} - ${errorBody}`);
+  }
+
+  return response;
+}
+
 export async function POST(request: NextRequest) {
   const authHeaders = await headers();
   const body = await request.json();
@@ -148,6 +175,43 @@ export async function POST(request: NextRequest) {
               break;
             }
           }
+        } else if (provider === "openrouter") {
+          const openRouterResponse = await callOpenRouter(messages, model, true);
+          const reader = openRouterResponse.body?.getReader();
+
+          if (!reader) {
+            throw new Error("No response body from OpenRouter");
+          }
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const text = new TextDecoder().decode(value);
+            const lines = text.split('\n');
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.substring(6);
+                if (data.trim() === "[DONE]") {
+                  break;
+                }
+                try {
+                  const json = JSON.parse(data);
+                  if (json.choices && json.choices[0].delta?.content) {
+                    const chunk = json.choices[0].delta.content;
+                    await writer.write(encoder.encode(chunk));
+                    completeResponse += chunk;
+                  }
+                } catch (e) {
+                  console.error("Error parsing OpenRouter response:", e);
+                }
+              }
+            }
+             if (completeResponse.includes("</html>")) {
+              break;
+            }
+          }
         } else {
           // Support pour d'autres providers locaux comme LM Studio
           throw new Error(`Provider ${provider} not yet implemented`);
@@ -246,6 +310,10 @@ export async function PUT(request: NextRequest) {
       const ollamaResponse = await callOllama(messages, model, false);
       const responseData = await ollamaResponse.json();
       chunk = responseData.message?.content || "";
+    } else if (provider === "openrouter") {
+      const openRouterResponse = await callOpenRouter(messages, model, false);
+      const responseData = await openRouterResponse.json();
+      chunk = responseData.choices?.[0]?.message?.content || "";
     } else {
       throw new Error(`Provider ${provider} not yet implemented`);
     }
