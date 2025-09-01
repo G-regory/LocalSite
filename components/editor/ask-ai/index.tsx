@@ -129,9 +129,13 @@ export function AskAI({
           const chunk = decoder.decode(value, { stream: true });
           contentResponse += chunk;
           
+          // --- DEBUGGING START ---
+          console.log("AI RESPONSE CHUNK:", chunk);
+          // --- DEBUGGING END ---
+
           setIsThinking(false);
           const now = Date.now();
-          if (now - lastRenderTime > 100) { // Render more frequently
+          if (now - lastRenderTime > 100) { 
             setHtml(contentResponse);
             lastRenderTime = now;
           }
