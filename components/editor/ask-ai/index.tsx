@@ -1,10 +1,10 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useMemo } from "react"; // useRef and useUpdateEffect removed
+import { useState, useMemo } from "react";
 import classNames from "classnames";
 import { toast } from "sonner";
-import { useLocalStorage } from "react-use"; // useUpdateEffect removed
-import { ArrowUp, Crosshair } from "lucide-react"; // ChevronDown removed
+import { useLocalStorage } from "react-use";
+import { ArrowUp, Crosshair } from "lucide-react";
 import { FaStopCircle } from "react-icons/fa";
 
 import ProModal from "@/components/pro-modal";
@@ -22,7 +22,7 @@ import { TooltipContent } from "@radix-ui/react-tooltip";
 import { SelectedHtmlElement } from "./selected-html-element";
 import { FollowUpTooltip } from "./follow-up-tooltip";
 import { isTheSameHtml } from "@/lib/compare-html-diff";
-import { getApiEndpoint, getDefaultProvider, getDefaultModel } from "@/lib/client-config";
+import { getDefaultProvider, getDefaultModel } from "@/lib/client-config"; // getApiEndpoint removed
 
 export function AskAI({
   html,
@@ -74,7 +74,7 @@ export function AskAI({
     try {
       onNewPrompt(prompt);
       
-      const request = await fetch(getApiEndpoint("/api/ask-ai-local"), { // Use ask-ai-local
+      const request = await fetch("/api/ask-ai-local", { // Hardcoded URL
         method: "POST",
         body: JSON.stringify({
           prompt,
