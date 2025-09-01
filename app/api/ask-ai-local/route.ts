@@ -62,6 +62,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function PUT(request: NextRequest) {
+export async function PUT() {
     return NextResponse.json({ ok: true, html: "PUT method is disabled in this version.", updatedLines: [] });
 }
