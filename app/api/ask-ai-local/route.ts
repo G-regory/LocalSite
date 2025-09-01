@@ -5,7 +5,6 @@ import { INITIAL_SYSTEM_PROMPT } from "@/lib/prompts";
 
 async function callOpenRouter(messages: any[], model: string) {
   const apiKey = process.env.OPENROUTER_API_KEY;
-  console.log("[BACKEND] Using OpenRouter API Key:", apiKey ? `sk...${apiKey.slice(-4)}` : "NOT FOUND");
   const baseUrl = process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
   const endpoint = "/chat/completions";
 
@@ -18,7 +17,7 @@ async function callOpenRouter(messages: any[], model: string) {
     body: JSON.stringify({
       model: model || process.env.OPENROUTER_MODEL,
       messages,
-      stream: false, // NO STREAMING
+      stream: false,
     }),
   });
 
@@ -35,10 +34,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { prompt, provider, model, html } = body;
-    console.log(`[BACKEND] Received request. Provider: ${provider}, Model: ${model}`);
 
     if (!model || !prompt) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return new NextResponse(JSON.stringify({ error: "Missing required fields" }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     const messages = [
@@ -47,21 +45,28 @@ export async function POST(request: NextRequest) {
     ];
 
     if (provider === "openrouter") {
-      console.log("[BACKEND] Calling OpenRouter (non-streaming)...");
       const openRouterResponse = await callOpenRouter(messages, model);
       const content = openRouterResponse.choices?.[0]?.message?.content || "";
-      console.log("[BACKEND] Received content from OpenRouter.");
-      return NextResponse.json({ ok: true, html: content });
+      
+      // Explicitly return a JSON response
+      return new NextResponse(JSON.stringify({ ok: true, html: content }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
     } else {
-      return NextResponse.json({ error: `Provider ${provider} not supported` }, { status: 400 });
+      return new NextResponse(JSON.stringify({ error: `Provider ${provider} not supported` }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
   } catch (error: any) {
     console.error("[BACKEND] CRITICAL ERROR in POST handler:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return new NextResponse(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
 
 export async function PUT() {
-    return NextResponse.json({ ok: true, html: "PUT method is disabled in this version.", updatedLines: [] });
+    // This function is not used in the simplified flow
+    return new NextResponse(JSON.stringify({ ok: true, html: "PUT method is disabled in this version." }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+    });
 }
