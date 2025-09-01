@@ -48,21 +48,14 @@ export function AskAI({
   selectedElement?: HTMLElement | null;
   setSelectedElement: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
 }) {
-  const refThink = useRef<HTMLDivElement | null>(null);
-  const audio = useRef<HTMLAudioElement | null>(null);
-
   const [open, setOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [hasAsked, setHasAsked] = useState(false);
-  const [, setPreviousPrompt] = useState("");
   const [provider, setProvider] = useLocalStorage("provider", getDefaultProvider());
   const [model, setModel] = useLocalStorage("model", getDefaultModel());
   const [openProvider, setOpenProvider] = useState(false);
   const [providerError, setProviderError] = useState("");
   const [openProModal, setOpenProModal] = useState(false);
-  const [think, setThink] = useState<string | undefined>(undefined);
-  const [openThink, setOpenThink] = useState(false);
-  const [isThinking, setIsThinking] = useState(true);
   const [controller, setController] = useState<AbortController | null>(null);
   const [isFollowUp, setIsFollowUp] = useState(true);
 
@@ -75,19 +68,13 @@ export function AskAI({
     if (!redesignMarkdown && !prompt.trim()) return;
     setisAiWorking(true);
     setProviderError("");
-    setThink("");
-    setOpenThink(false);
-    setIsThinking(true);
-
-    let contentResponse = "";
-    let lastRenderTime = 0;
 
     const abortController = new AbortController();
     setController(abortController);
     try {
       onNewPrompt(prompt);
       
-      const request = await fetch(getApiEndpoint("/api/ask-ai"), {
+      const request = await fetch(getApiEndpoint("/api/ask-ai-local"), { // Use ask-ai-local
         method: "POST",
         body: JSON.stringify({
           prompt,
@@ -98,63 +85,30 @@ export function AskAI({
         }),
         headers: {
           "Content-Type": "application/json",
-          "x-forwarded-for": window.location.hostname,
         },
         signal: abortController.signal,
       });
 
-      if (request && request.body) {
-        const reader = request.body.getReader();
-        const decoder = new TextDecoder("utf-8");
-        
-        const read = async () => {
-          const { done, value } = await reader.read();
-          if (done) {
-            toast.success("AI responded successfully");
-            setPreviousPrompt(prompt);
-            setPrompt("");
-            setisAiWorking(false);
-            setHasAsked(true);
-            if (audio.current) {
-              try {
-                await audio.current.play();
-              } catch {
-                // Ignore play() interrupt error
-              }
-            }
-            onSuccess(contentResponse, prompt);
-            return;
-          }
+      const res = await request.json();
 
-          const chunk = decoder.decode(value, { stream: true });
-          contentResponse += chunk;
-          
-          // --- DEBUGGING START ---
-          console.log("AI RESPONSE CHUNK:", chunk);
-          // --- DEBUGGING END ---
-
-          setIsThinking(false);
-          const now = Date.now();
-          if (now - lastRenderTime > 100) { 
-            setHtml(contentResponse);
-            lastRenderTime = now;
-          }
-          
-          read();
-        };
-
-        read();
-      } else {
-        throw new Error("The request body is empty.");
+      if (!res.ok) {
+        throw new Error(res.error || "An unknown error occurred from the API.");
       }
+
+      toast.success("AI responded successfully");
+      if (res.html) {
+        setHtml(res.html);
+        onSuccess(res.html, prompt);
+      }
+      setPrompt("");
+      setHasAsked(true);
+
     } catch (error: any) {
-      setisAiWorking(false);
       if (error.name !== 'AbortError') {
         toast.error(error.message);
       }
-      if (error.openLogin) {
-        setOpen(true);
-      }
+    } finally {
+      setisAiWorking(false);
     }
   };
 
@@ -163,23 +117,8 @@ export function AskAI({
       controller.abort();
       setController(null);
       setisAiWorking(false);
-      setThink("");
-      setOpenThink(false);
-      setIsThinking(false);
     }
   };
-
-  useUpdateEffect(() => {
-    if (refThink.current) {
-      refThink.current.scrollTop = refThink.current.scrollHeight;
-    }
-  }, [think]);
-
-  useUpdateEffect(() => {
-    if (!isThinking) {
-      setOpenThink(false);
-    }
-  }, [isThinking]);
 
   const isSameHtml = useMemo(() => {
     return isTheSameHtml(html);
@@ -188,43 +127,6 @@ export function AskAI({
   return (
     <div className="px-3">
       <div className="relative bg-neutral-800 border border-neutral-700 rounded-2xl ring-[4px] focus-within:ring-neutral-500/30 focus-within:border-neutral-600 ring-transparent z-10 w-full group">
-        {think && (
-          <div className="w-full border-b border-neutral-700 relative overflow-hidden">
-            <header
-              className="flex items-center justify-between px-5 py-2.5 group hover:bg-neutral-600/20 transition-colors duration-200 cursor-pointer"
-              onClick={() => {
-                setOpenThink(!openThink);
-              }}
-            >
-              <p className="text-sm font-medium text-neutral-300 group-hover:text-neutral-200 transition-colors duration-200">
-                {isThinking ? "LocalSite is thinking..." : "LocalSite's plan"}
-              </p>
-              <ChevronDown
-                className={classNames(
-                  "size-4 text-neutral-400 group-hover:text-neutral-300 transition-all duration-200",
-                  {
-                    "rotate-180": openThink,
-                  }
-                )}
-              />
-            </header>
-            <main
-              ref={refThink}
-              className={classNames(
-                "overflow-y-auto transition-all duration-200 ease-in-out",
-                {
-                  "max-h-[0px]": !openThink,
-                  "min-h-[250px] max-h-[250px] border-t border-neutral-700":
-                    openThink,
-                }
-              )}
-            >
-              <p className="text-[13px] text-neutral-400 whitespace-pre-line px-5 pb-4 pt-3">
-                {think}
-              </p>
-            </main>
-          </div>
-        )}
         {selectedElement && (
           <div className="px-4 pt-3">
             <SelectedHtmlElement
@@ -240,7 +142,7 @@ export function AskAI({
               <div className="flex items-center justify-start gap-2">
                 <Loading overlay={false} className="!size-4" />
                 <p className="text-neutral-400 text-sm">
-                  AI is {isThinking ? "thinking" : "coding"}...{" "}
+                  AI is working...
                 </p>
               </div>
               <div
@@ -357,10 +259,6 @@ export function AskAI({
           </div>
         )}
       </div>
-      <audio ref={audio} id="audio" className="hidden">
-        <source src="/success.mp3" type="audio/mpeg" />
-        Your browser does not support the audio element.
-      </audio>
     </div>
   );
 }
