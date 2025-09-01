@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     const messages = [
       { role: "system", content: INITIAL_SYSTEM_PROMPT },
-      { role: "user", content: html ? `Here is my current HTML code:\\n\\n\\`\\`\\`html\\n${html}\\n\\`\\`\\`\\n\\nNow, please create a new design based on this HTML and my prompt: ${prompt}` : prompt },
+      { role: "user", content: html ? `Here is my current HTML code:\n\n\`\`\`html\n${html}\n\`\`\`\n\nNow, please create a new design based on this HTML and my prompt: ${prompt}` : prompt },
     ];
 
     if (provider === "openrouter") {
@@ -53,7 +53,6 @@ export async function POST(request: NextRequest) {
       console.log("[BACKEND] Received content from OpenRouter.");
       return NextResponse.json({ ok: true, html: content });
     } else {
-      // The PUT request logic can be removed or adapted if needed, for now we focus on POST
       return NextResponse.json({ error: `Provider ${provider} not supported` }, { status: 400 });
     }
 
@@ -63,8 +62,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// The PUT handler is no longer used by the simplified frontend, so it can be removed or ignored.
-// To avoid build errors if it's referenced elsewhere, we can leave a placeholder.
 export async function PUT(request: NextRequest) {
     return NextResponse.json({ ok: true, html: "PUT method is disabled in this version.", updatedLines: [] });
 }
