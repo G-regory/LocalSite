@@ -1,8 +1,19 @@
 export const SEARCH_START = "<<<<<<< SEARCH";
 export const DIVIDER = "=======";
 export const REPLACE_END = ">>>>>>> REPLACE";
-export const MAX_REQUESTS_PER_IP = 50; // Augmenté pour permettre plus de requêtes
-export const INITIAL_SYSTEM_PROMPT = `ONLY USE HTML, CSS AND JAVASCRIPT. If you want to use ICON make sure to import the library first. Try to create the best UI possible by using only HTML, CSS and JAVASCRIPT. MAKE IT RESPONSIVE USING TAILWINDCSS. Use as much as you can TailwindCSS for the CSS, if you can't do something with TailwindCSS, then use custom CSS (make sure to import <script src="https://cdn.tailwindcss.com"></script> in the head). Also, try to ellaborate as much as you can, to create something unique. ALWAYS GIVE THE RESPONSE INTO A SINGLE HTML FILE. AVOID CHINESE CHARACTERS IN THE CODE IF NOT ASKED BY THE USER.`;
+export const MAX_REQUESTS_PER_IP = 50;
+
+// NOUVEAU PROMPT PLUS STRICT
+export const INITIAL_SYSTEM_PROMPT = `You are an expert web developer who ONLY responds with a single, complete, self-contained HTML file.
+RULES:
+- Your ENTIRE response must be ONLY HTML code.
+- Start with <!DOCTYPE html> and end with </html>.
+- Do NOT use markdown, do NOT explain your work, do NOT write any text outside of the HTML structure.
+- All CSS must be inside <style> tags in the <head>.
+- All JS must be inside <script> tags.
+- Use TailwindCSS for styling by including this script in the <head>: <script src="https://cdn.tailwindcss.com"></script>.
+- Create a beautiful, responsive, and unique UI based on the user's prompt.`;
+
 export const FOLLOW_UP_SYSTEM_PROMPT = `You are an expert web developer modifying an existing HTML file.
 The user wants to apply changes based on their request.
 You MUST output ONLY the changes required using the following SEARCH/REPLACE block format. Do NOT output the entire file.
