@@ -17,70 +17,51 @@ async function callOpenRouter(messages: any[], model: string) {
     body: JSON.stringify({
       model: model,
       messages: messages,
-      max_tokens: 4000
+      max_tokens: 8192 // Augmentation de la limite de tokens
     }),
   });
 
-  console.log(`[OpenRouter] Status: ${response.status}`);
-  console.log(`[OpenRouter] Content-Type: ${response.headers.get('content-type')}`);
-
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('[OpenRouter] Error Response:', errorText.substring(0, 200));
-    throw new Error(`OpenRouter API Error: ${response.status}`);
+    throw new Error(`OpenRouter API Error: ${response.status} - ${errorText}`);
   }
-
-  const text = await response.text();
-  console.log(`[OpenRouter] Raw response (100 chars): ${text.substring(0, 100)}`);
-
-  try {
-    return JSON.parse(text);
-  } catch (e) {
-    console.error('[OpenRouter] Invalid JSON received:', text.substring(0, 500));
-    throw new Error('OpenRouter returned invalid JSON');
-  }
+  return response.json();
 }
 
 export async function POST(req: NextRequest) {
   try {
     if (!OPENROUTER_API_KEY) {
-      return NextResponse.json({ ok: false, error: 'Missing API Key' }, { status: 500 });
+      return NextResponse.json({ ok: false, error: 'Server configuration error: Missing API Key' }, { status: 500 });
     }
-
     const body = await req.json();
-    const { prompt, model } = body;
-
-    console.log(`[API] Processing request with model: ${model}`);
-
-    const messages = [
-      { role: 'system', content: INITIAL_SYSTEM_PROMPT }, 
-      { role: 'user', content: prompt }
-    ];
+    const { prompt, model, html } = body;
+    const userContent = html ? `Current HTML:\n\`\`\`html\n${html}\n\`\`\`\n\nUser request: ${prompt}` : prompt;
+    const messages = [{ role: 'system', content: INITIAL_SYSTEM_PROMPT }, { role: 'user', content: userContent }];
 
     const openRouterResponse = await callOpenRouter(messages, model || 'moonshotai/kimi-dev-72b:free');
     let rawContent = openRouterResponse.choices?.[0]?.message?.content || "Pas de réponse";
 
-    // Extraction du HTML
     const htmlBlockRegex = /```html\s*([\s\S]*?)\s*```/;
     const markdownMatch = rawContent.match(htmlBlockRegex);
     
     let finalHtml = rawContent;
     if (markdownMatch) {
       finalHtml = markdownMatch[1].trim();
-      console.log('[API] HTML extracted from markdown');
     } else {
       const doctypeRegex = /(<!DOCTYPE\s+html>[\s\S]*?<\/html>)/i;
       const directMatch = rawContent.match(doctypeRegex);
       if (directMatch) {
         finalHtml = directMatch[1].trim();
-        console.log('[API] Direct HTML detected');
       }
     }
 
     return NextResponse.json({ ok: true, html: finalHtml });
 
   } catch (err: any) {
-    console.error('[API] Error:', err.message);
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }
+}
+
+export async function PUT() {
+    return NextResponse.json({ ok: false, error: "PUT method is not implemented." }, { status: 405 });
 }
