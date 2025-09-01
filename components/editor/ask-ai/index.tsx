@@ -1,10 +1,10 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useRef, useMemo } from "react";
+import { useState, useMemo } from "react"; // useRef and useUpdateEffect removed
 import classNames from "classnames";
 import { toast } from "sonner";
-import { useLocalStorage, useUpdateEffect } from "react-use";
-import { ArrowUp, ChevronDown, Crosshair } from "lucide-react";
+import { useLocalStorage } from "react-use"; // useUpdateEffect removed
+import { ArrowUp, Crosshair } from "lucide-react"; // ChevronDown removed
 import { FaStopCircle } from "react-icons/fa";
 
 import ProModal from "@/components/pro-modal";
