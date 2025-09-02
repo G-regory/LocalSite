@@ -1,8 +1,10 @@
+// components/editor/ask-ai/settings.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings as SettingsIcon, ChevronDown } from "lucide-react";
+import { Settings as SettingsIcon, ChevronDown, KeyRound } from "lucide-react";
 import Image from "next/image";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +13,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { MODELS, PROVIDERS } from "@/lib/providers";
+import { useApiKey } from "@/hooks/useApiKey";
 
 interface SettingsProps {
   provider: string;
@@ -34,11 +38,19 @@ export function Settings({
 }: SettingsProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const { apiKey, setApiKey } = useApiKey();
+  const [localApiKey, setLocalApiKey] = useState(apiKey || "");
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    setLocalApiKey(apiKey || "");
+  }, [apiKey]);
 
+  const handleSaveApiKey = () => {
+    setApiKey(localApiKey);
+    toast.success("Clé API OpenRouter sauvegardée !");
+  };
+  
   const availableModels = MODELS.filter(modelItem => {
     const isLocalMode = process.env.NEXT_PUBLIC_LOCAL_MODE === "true";
     if (isLocalMode) {
@@ -66,9 +78,25 @@ export function Settings({
               {error}
             </div>
           )}
+
+          <div className="text-sm font-medium mb-2">Clé API OpenRouter</div>
+          <div className="flex items-center gap-2">
+            <KeyRound className="size-4 text-neutral-400" />
+            <Input
+              type="password"
+              placeholder="Entrez votre clé API..."
+              value={localApiKey}
+              onChange={(e) => setLocalApiKey(e.target.value)}
+              className="!h-8"
+            />
+            <Button size="sm" onClick={handleSaveApiKey}>Sauvegarder</Button>
+          </div>
+          <p className="text-xs text-neutral-500 mt-1 px-1">
+            Votre clé est stockée localement dans votre navigateur.
+          </p>
           
-          <div className="text-sm font-medium mb-2">Modèle</div>
-          <div className="space-y-1 max-h-64 overflow-y-auto">
+          <div className="text-sm font-medium mb-2 mt-4">Modèle</div>
+          <div className="space-y-1 max-h-48 overflow-y-auto">
             {availableModels.map((modelItem) => (
               <DropdownMenuItem
                 key={modelItem.value}
@@ -119,7 +147,7 @@ export function Settings({
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={onClose}
+              onClick={() => setDropdownOpen(false)}
               className="w-full"
             >
               Fermer
