@@ -39,11 +39,12 @@ export async function POST(req: NextRequest) {
     }
     const body = await req.json();
     const { prompt, model, html } = body;
-    const userContent = html ? `Current HTML:\n\
-```html\
-${html}\
-```\
-\
+    const userContent = html ? `Current HTML:
+
+\`\`\`html
+${html}
+\`\`\`
+
 User request: ${prompt}` : prompt;
     const messages: ChatMessage[] = [{ role: 'system', content: INITIAL_SYSTEM_PROMPT }, { role: 'user', content: userContent }];
 
