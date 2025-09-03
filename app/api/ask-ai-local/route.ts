@@ -3,7 +3,7 @@ import { NextResponse, NextRequest } from 'next/server';
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
-const INITIAL_SYSTEM_PROMPT = `You are an expert web developer who ONLY responds with a single, complete, self-contained HTML file. RULES: - Your ENTIRE response must be ONLY HTML code. - Start with <!DOCTYPE html> and end with </html>. - Do NOT use markdown, do NOT explain your work, do NOT write any text outside of the HTML structure. - All CSS must be inside <style> tags in the <head>. - All JS must be inside <script> tags. - Use TailwindCSS for styling by including this script in the <head>: <script src="https://cdn.tailwindcss.com"></script>. - Create a beautiful, responsive, and unique UI based on the user's prompt.`;
+const INITIAL_SYSTEM_PROMPT = `You are an expert web developer who ONLY responds with a single, complete, self-contained HTML file. RULES: - Your ENTIRE response must be ONLY HTML code. - Start with <!DOCTYPE html> and end with </html>. - Do NOT use markdown, do NOT explain your work, do NOT write any text outside of the HTML structure. - All CSS must be inside <style> tags in the <head>. - All JS must be inside <script> tags. - Use TailwindCSS for styling. - Create a beautiful, responsive, and unique UI based on the user's prompt.`;
 
 async function callOpenRouter(messages: any[], model: string) {
   const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
@@ -11,7 +11,6 @@ async function callOpenRouter(messages: any[], model: string) {
     headers: {
       'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': 'http://localhost:3000',
       'X-Title': 'LocalSite'
     },
     body: JSON.stringify({
@@ -53,6 +52,10 @@ export async function POST(req: NextRequest) {
       if (directMatch) {
         finalHtml = directMatch[1].trim();
       }
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      finalHtml = finalHtml.replace('</head>', '<script src="https://cdn.tailwindcss.com"></script></head>');
     }
 
     return NextResponse.json({ ok: true, html: finalHtml });
