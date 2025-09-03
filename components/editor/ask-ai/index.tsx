@@ -48,7 +48,7 @@ export function AskAI({ html, setHtml, onSuccess, onNewPrompt }: AskAIProps) {
         try {
             const errorData = JSON.parse(textResponse);
             throw new Error(errorData.error || "Unknown API error");
-        } catch (parseError) {
+        } catch {
             throw new Error(`API returned non-JSON error (${response.status}): ${textResponse.slice(0, 100)}...`);
         }
       }
