@@ -17,6 +17,11 @@ interface AskAIProps {
   onNewPrompt: (prompt: string) => void;
   isAiWorking: boolean;
   setisAiWorking: (isWorking: boolean) => void;
+  htmlHistory: { html: string; createdAt: Date; prompt: string; }[];
+  isEditableModeEnabled: boolean;
+  setIsEditableModeEnabled: (enabled: boolean) => void;
+  selectedElement: HTMLElement | null;
+  setSelectedElement: (element: HTMLElement | null) => void;
 }
 
 export function AskAI({ 
@@ -24,8 +29,13 @@ export function AskAI({
   setHtml, 
   onSuccess, 
   onNewPrompt,
+  htmlHistory,
   isAiWorking: parentIsAiWorking,
-  setisAiWorking: parentSetIsAiWorking
+  setisAiWorking: parentSetIsAiWorking,
+  isEditableModeEnabled,
+  setIsEditableModeEnabled,
+  selectedElement,
+  setSelectedElement
 }: AskAIProps) {
   const [prompt, setPrompt] = useState("");
   const [provider, setProvider] = useLocalStorage("provider", getDefaultProvider());
