@@ -5,7 +5,12 @@ const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
 const INITIAL_SYSTEM_PROMPT = `You are an expert web developer who ONLY responds with a single, complete, self-contained HTML file. RULES: - Your ENTIRE response must be ONLY HTML code. - Start with <!DOCTYPE html> and end with </html>. - Do NOT use markdown, do NOT explain your work, do NOT write any text outside of the HTML structure. - All CSS must be inside <style> tags in the <head>. - All JS must be inside <script> tags. - Use TailwindCSS for styling. - Create a beautiful, responsive, and unique UI based on the user's prompt.`;
 
-async function callOpenRouter(messages: any[], model: string) {
+interface ChatMessage {
+  role: string;
+  content: string;
+}
+
+async function callOpenRouter(messages: ChatMessage[], model: string) {
   const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -34,11 +39,15 @@ export async function POST(req: NextRequest) {
     }
     const body = await req.json();
     const { prompt, model, html } = body;
-    const userContent = html ? `Current HTML:\n\`\`\`html\n${html}\n\`\`\`\n\nUser request: ${prompt}` : prompt;
-    const messages = [{ role: 'system', content: INITIAL_SYSTEM_PROMPT }, { role: 'user', content: userContent }];
+    const userContent = html ? `Current HTML:\n\
+```html\
+${html}\
+```\
+\nUser request: ${prompt}` : prompt;
+    const messages: ChatMessage[] = [{ role: 'system', content: INITIAL_SYSTEM_PROMPT }, { role: 'user', content: userContent }];
 
     const openRouterResponse = await callOpenRouter(messages, model || 'moonshotai/kimi-dev-72b:free');
-    let rawContent = openRouterResponse.choices?.[0]?.message?.content || "Pas de réponse";
+    const rawContent = openRouterResponse.choices?.[0]?.message?.content || "Pas de réponse";
 
     const htmlBlockRegex = /```html\s*([\s\S]*?)\s*```/;
     const markdownMatch = rawContent.match(htmlBlockRegex);
@@ -60,8 +69,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, html: finalHtml });
 
-  } catch (err: any) {
-    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
+  } catch (err) {
+    if (err instanceof Error) {
+      return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
+    }
+    return NextResponse.json({ ok: false, error: "An unknown error occurred." }, { status: 500 });
   }
 }
 

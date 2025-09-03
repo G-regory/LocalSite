@@ -1,18 +1,23 @@
 "use client";
-import { useState, useMemo } from "react";
-import classNames from "classnames";
+import { useState } from "react";
 import { toast } from "sonner";
 import { useLocalStorage } from "react-use";
-import { ArrowUp, Crosshair } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import { FaStopCircle } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
-import { MODELS } from "@/lib/providers";
 import { Settings } from "./settings";
 import Loading from "@/components/loading";
 import { isTheSameHtml } from "@/lib/compare-html-diff";
 import { getDefaultProvider, getDefaultModel } from "@/lib/client-config";
 
-export function AskAI({ html, setHtml, onSuccess, onNewPrompt }: any) {
+interface AskAIProps {
+  html: string;
+  setHtml: (html: string) => void;
+  onSuccess: (html: string, prompt: string) => void;
+  onNewPrompt: (prompt: string) => void;
+}
+
+export function AskAI({ html, setHtml, onSuccess, onNewPrompt }: AskAIProps) {
   const [prompt, setPrompt] = useState("");
   const [isAiWorking, setisAiWorking] = useState(false);
   const [provider, setProvider] = useLocalStorage("provider", getDefaultProvider());
@@ -43,7 +48,7 @@ export function AskAI({ html, setHtml, onSuccess, onNewPrompt }: any) {
         try {
             const errorData = JSON.parse(textResponse);
             throw new Error(errorData.error || "Unknown API error");
-        } catch (e) {
+        } catch (parseError) {
             throw new Error(`API returned non-JSON error (${response.status}): ${textResponse.slice(0, 100)}...`);
         }
       }
@@ -58,8 +63,8 @@ export function AskAI({ html, setHtml, onSuccess, onNewPrompt }: any) {
       }
 
       setPrompt("");
-    } catch (error: any) {
-      if (error.name !== 'AbortError') {
+    } catch (error) {
+      if (error instanceof Error && error.name !== 'AbortError') {
         toast.error(error.message);
         console.error("[callAi] Error:", error);
       }

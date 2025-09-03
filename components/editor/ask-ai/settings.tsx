@@ -25,7 +25,6 @@ interface SettingsProps {
   open: boolean;
   error: string;
   isFollowUp: boolean;
-  onClose: () => void;
 }
 
 export function Settings({
@@ -34,7 +33,6 @@ export function Settings({
   onChange,
   onModelChange,
   error,
-  onClose,
 }: SettingsProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
