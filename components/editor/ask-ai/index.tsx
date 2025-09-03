@@ -117,6 +117,9 @@ export function AskAI({ html, setHtml, onSuccess, onNewPrompt }: AskAIProps) {
             model={model as string}
             onChange={setProvider}
             onModelChange={setModel}
+            open={false}
+            error=""
+            isFollowUp={false}
           />
           <Button size="iconXs" disabled={isAiWorking || !prompt.trim()} onClick={callAi}>
             <ArrowUp className="size-4" />
