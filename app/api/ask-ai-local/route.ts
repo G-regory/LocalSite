@@ -43,7 +43,8 @@ export async function POST(req: NextRequest) {
 ```html\
 ${html}\
 ```\
-\nUser request: ${prompt}` : prompt;
+\
+User request: ${prompt}` : prompt;
     const messages: ChatMessage[] = [{ role: 'system', content: INITIAL_SYSTEM_PROMPT }, { role: 'user', content: userContent }];
 
     const openRouterResponse = await callOpenRouter(messages, model || 'moonshotai/kimi-dev-72b:free');
