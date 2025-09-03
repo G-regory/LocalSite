@@ -29,6 +29,7 @@ export function AskAI({
   setHtml, 
   onSuccess, 
   onNewPrompt,
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   htmlHistory,
   isAiWorking: parentIsAiWorking,
   setisAiWorking: parentSetIsAiWorking,
@@ -36,6 +37,7 @@ export function AskAI({
   setIsEditableModeEnabled,
   selectedElement,
   setSelectedElement
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 }: AskAIProps) {
   const [prompt, setPrompt] = useState("");
   const [provider, setProvider] = useLocalStorage("provider", getDefaultProvider());
