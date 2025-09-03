@@ -13,21 +13,39 @@ import { getDefaultProvider, getDefaultModel } from "@/lib/client-config";
 interface AskAIProps {
   html: string;
   setHtml: (html: string) => void;
-  onSuccess: (html: string, prompt: string) => void;
+  onSuccess: (html: string, prompt: string, updatedLines?: number[][]) => void;
   onNewPrompt: (prompt: string) => void;
+  htmlHistory: { html: string; createdAt: Date; prompt: string; }[];
+  isAiWorking: boolean;
+  setisAiWorking: (isWorking: boolean) => void;
+  isEditableModeEnabled: boolean;
+  setIsEditableModeEnabled: (enabled: boolean) => void;
+  selectedElement: HTMLElement | null;
+  setSelectedElement: (element: HTMLElement | null) => void;
 }
 
-export function AskAI({ html, setHtml, onSuccess, onNewPrompt }: AskAIProps) {
+export function AskAI({ 
+  html, 
+  setHtml, 
+  onSuccess, 
+  onNewPrompt,
+  htmlHistory,
+  isAiWorking: parentIsAiWorking,
+  setisAiWorking: parentSetIsAiWorking,
+  isEditableModeEnabled,
+  setIsEditableModeEnabled,
+  selectedElement,
+  setSelectedElement
+}: AskAIProps) {
   const [prompt, setPrompt] = useState("");
-  const [isAiWorking, setisAiWorking] = useState(false);
   const [provider, setProvider] = useLocalStorage("provider", getDefaultProvider());
   const [model, setModel] = useLocalStorage("model", getDefaultModel());
   const [controller, setController] = useState<AbortController | null>(null);
 
   const callAi = async () => {
-    if (isAiWorking || !prompt.trim()) return;
+    if (parentIsAiWorking || !prompt.trim()) return;
     
-    setisAiWorking(true);
+    parentSetIsAiWorking(true);
     const abortController = new AbortController();
     setController(abortController);
 
@@ -69,7 +87,7 @@ export function AskAI({ html, setHtml, onSuccess, onNewPrompt }: AskAIProps) {
         console.error("[callAi] Error:", error);
       }
     } finally {
-      setisAiWorking(false);
+      parentSetIsAiWorking(false);
       setController(null);
     }
   };
@@ -84,7 +102,7 @@ export function AskAI({ html, setHtml, onSuccess, onNewPrompt }: AskAIProps) {
     <div className="px-3">
       <div className="relative bg-neutral-800 border border-neutral-700 rounded-2xl ring-[4px] focus-within:ring-neutral-500/30 focus-within:border-neutral-600 ring-transparent z-10 w-full group">
         <div className="w-full relative flex items-center justify-between">
-          {isAiWorking && (
+          {parentIsAiWorking && (
             <div className="absolute bg-neutral-800 rounded-lg bottom-0 left-4 w-[calc(100%-30px)] h-full z-10 flex items-center justify-between">
               <div className="flex items-center justify-start gap-2">
                 <Loading overlay={false} className="!size-4" />
@@ -101,7 +119,7 @@ export function AskAI({ html, setHtml, onSuccess, onNewPrompt }: AskAIProps) {
           )}
           <input
             type="text"
-            disabled={isAiWorking}
+            disabled={parentIsAiWorking}
             className="w-full bg-transparent text-sm outline-none text-white placeholder:text-neutral-400 p-4"
             placeholder="Ask anything..."
             value={prompt}
@@ -121,7 +139,7 @@ export function AskAI({ html, setHtml, onSuccess, onNewPrompt }: AskAIProps) {
             error=""
             isFollowUp={false}
           />
-          <Button size="iconXs" disabled={isAiWorking || !prompt.trim()} onClick={callAi}>
+          <Button size="iconXs" disabled={parentIsAiWorking || !prompt.trim()} onClick={callAi}>
             <ArrowUp className="size-4" />
           </Button>
         </div>
