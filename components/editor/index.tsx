@@ -145,7 +145,7 @@ export const AppEditor = ({ project }: { project?: Project | null }) => {
     resizer.current.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("resize", resetLayout);
   });
-  useUnmount(() => {.
+  useUnmount(() => {
     document.removeEventListener("mousemove", handleResize);
     document.removeEventListener("mouseup", handleMouseUp);
     if (resizer.current) {
