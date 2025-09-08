@@ -23,10 +23,11 @@ import { useEditor } from "@/hooks/useEditor";
 import { AskAI } from "@/components/editor/ask-ai";
 import { DeployButton } from "./deploy-button";
 import { Project } from "@/types";
-import { SaveButton } from "./save-button";
 import { LoadProject } from "../my-projects/load-project";
 import { DownloadButton } from "./download-button";
 import { isTheSameHtml } from "@/lib/compare-html-diff";
+import { useAutoSave } from "@/hooks/useAutoSave";
+import { AutoSaveIndicator } from "./auto-save-indicator";
 
 export const AppEditor = ({ project }: { project?: Project | null }) => {
   const [htmlStorage, , removeHtmlStorage] = useLocalStorage("html_content");
@@ -37,6 +38,11 @@ export const AppEditor = ({ project }: { project?: Project | null }) => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const deploy = searchParams.get("deploy") === "true";
+  const { status } = useAutoSave(html, prompts);
+
+  useUpdateEffect(() => {
+    localStorage.setItem('html_content', html);
+  }, [html]);
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const preview = useRef<HTMLDivElement | null>(null);
@@ -139,7 +145,7 @@ export const AppEditor = ({ project }: { project?: Project | null }) => {
     resizer.current.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("resize", resetLayout);
   });
-  useUnmount(() => {
+  useUnmount(() => {.
     document.removeEventListener("mousemove", handleResize);
     document.removeEventListener("mouseup", handleMouseUp);
     if (resizer.current) {
@@ -186,12 +192,9 @@ export const AppEditor = ({ project }: { project?: Project | null }) => {
             toast.success(`Project "${project.space_id}" loaded successfully!`);
           }}
         />
+        <AutoSaveIndicator status={status} />
         <DownloadButton html={html} />
-        {project?._id ? (
-          <SaveButton html={html} prompts={prompts} />
-        ) : (
-          <DeployButton html={html} prompts={prompts} />
-        )}
+        <DeployButton html={html} prompts={prompts} />
       </Header>
       <main className="bg-neutral-950 flex-1 max-lg:flex-col flex w-full max-lg:h-[calc(100%-82px)] relative">
         {currentTab === "chat" && (
